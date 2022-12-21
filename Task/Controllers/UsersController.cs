@@ -32,6 +32,18 @@ namespace Task.Controllers
             return await _context.Users.ToListAsync();
         }
 
+        //GET api/Users/Company/4
+
+        [HttpGet("company/{id}")]
+        public async Task<ActionResult<IEnumerable<User>>> GetUsersFromCompany(long id)
+        {
+            if (_context.Users == null)
+            {
+                return NotFound();
+            }
+            return await _context.Users.Where(user=>user.CompanyId==id).ToListAsync();
+        }
+
         // GET: api/Users/5
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> GetUser(long id)
