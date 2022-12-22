@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.Elfie.Diagnostics;
 using Microsoft.EntityFrameworkCore;
 using Task.Data;
 using Task.Models;
@@ -23,59 +25,97 @@ namespace Task.Controllers
 
         // GET: api/Users
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsers()
+        public async Task<ActionResult<IEnumerable<GetUserDTO>>> GetUsers()
         {
-          if (_context.Users == null)
-          {
-              return NotFound();
-          }
-            return await _context.Users.ToListAsync();
+
+
+            var users = await _context.Users.Select(x => new GetUserDTO
+            {
+                Id = x.Id,
+                FirstName = x.FirstName,
+                LastName = x.LastName,
+                DOB = x.DOB,
+                PhoneNumber = x.PhoneNumber,
+                Position = x.Position,
+                CompanyId = x.CompanyId,
+                CompanyName = x.Company.Name
+            }).ToListAsync();
+
+            return users;
+
         }
 
         //GET api/Users/Company/4
 
         [HttpGet("company/{id}")]
-        public async Task<ActionResult<IEnumerable<User>>> GetUsersFromCompany(long id)
+        public async Task<ActionResult<IEnumerable<GetUserDTO>>> GetUsersFromCompany(Guid id)
         {
-            if (_context.Users == null)
+
+            var users = await _context.Users.Select(x => new GetUserDTO
             {
-                return NotFound();
-            }
-            return await _context.Users.Where(user=>user.CompanyId==id).ToListAsync();
+                Id = x.Id,
+                FirstName = x.FirstName,
+                LastName = x.LastName,
+                DOB = x.DOB,
+                PhoneNumber = x.PhoneNumber,
+                Position = x.Position,
+                CompanyId = x.CompanyId,
+                CompanyName = x.Company.Name
+            }).Where(y=>y.CompanyId==id).ToListAsync();
+
+            return users;
+            
         }
 
         // GET: api/Users/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<User>> GetUser(long id)
+        public async Task<ActionResult<GetUserDTO>> GetUser(Guid id)
         {
-          if (_context.Users == null)
-          {
-              return NotFound();
-          }
+
+            /*var user = await _context.Users.FindAsync(id);*/
+
             var user = await _context.Users.FindAsync(id);
+           
 
             if (user == null)
             {
                 return NotFound();
             }
+            var company = await _context.Companies.FindAsync(user.CompanyId);
 
-            return user;
+            return new GetUserDTO
+            {
+                Id = user.Id,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                DOB = user.DOB,
+                PhoneNumber = user.PhoneNumber,
+                Position = user.Position,
+                CompanyId = user.CompanyId,
+                CompanyName = company.Name
+
+
+            };
         }
 
         // PUT: api/Users/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutUser(long id, User user)
+        public async Task<IActionResult> PutUser(Guid id, CreateUserDTO userDTO)
         {
-            if (id != user.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(user).State = EntityState.Modified;
 
             try
             {
+              var user=  await _context.Users.FindAsync(id);
+
+                user.FirstName = userDTO.FirstName;
+                user.LastName= userDTO.LastName;
+                user.PhoneNumber = userDTO.PhoneNumber;
+                user.Position= userDTO.Position;
+                user.CompanyId = userDTO.CompanyId;
+                user.DOB= userDTO.DOB;
+
+
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException)
@@ -96,21 +136,28 @@ namespace Task.Controllers
         // POST: api/Users
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<User>> PostUser(User user)
+        public async Task<ActionResult<Guid>> PostUser(CreateUserDTO userDTO)
         {
-          if (_context.Users == null)
-          {
-              return Problem("Entity set 'ApplicationDbContext.Users'  is null.");
-          }
+
+            var user = new User
+            {
+                FirstName = userDTO.FirstName,
+                LastName = userDTO.LastName,
+                Position = userDTO.Position,
+                PhoneNumber = userDTO.PhoneNumber,
+                DOB = userDTO.DOB,
+                CompanyId = userDTO.CompanyId,
+            };
+
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetUser", new { id = user.Id }, user);
+            return CreatedAtAction("GetUser", new { id = user.Id }, user.Id);
         }
 
         // DELETE: api/Users/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteUser(long id)
+        public async Task<IActionResult> DeleteUser(Guid id)
         {
             if (_context.Users == null)
             {
@@ -128,7 +175,7 @@ namespace Task.Controllers
             return NoContent();
         }
 
-        private bool UserExists(long id)
+        private bool UserExists(Guid id)
         {
             return (_context.Users?.Any(e => e.Id == id)).GetValueOrDefault();
         }

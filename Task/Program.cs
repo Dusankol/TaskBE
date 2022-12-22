@@ -12,7 +12,6 @@ builder.Services.AddCors(options =>
         builder =>
         {
             builder
-           // .WithOrigins("http://127.0.0.1:5173/")
            .AllowAnyOrigin()
             .AllowAnyMethod()
             .AllowAnyHeader();
