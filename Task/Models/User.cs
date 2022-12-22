@@ -14,7 +14,7 @@ namespace Task.Models
 
         public Guid CompanyId { get; set; }
 
-        public Company Company { get; set; }
+        public virtual Company Company { get; set; }
 
         public DateTime DOB { get; set; }
 

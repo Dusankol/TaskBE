@@ -72,8 +72,6 @@ namespace Task.Controllers
         public async Task<ActionResult<GetUserDTO>> GetUser(Guid id)
         {
 
-            /*var user = await _context.Users.FindAsync(id);*/
-
             var user = await _context.Users.FindAsync(id);
            
 
@@ -81,8 +79,7 @@ namespace Task.Controllers
             {
                 return NotFound();
             }
-            var company = await _context.Companies.FindAsync(user.CompanyId);
-
+           
             return new GetUserDTO
             {
                 Id = user.Id,
@@ -92,7 +89,7 @@ namespace Task.Controllers
                 PhoneNumber = user.PhoneNumber,
                 Position = user.Position,
                 CompanyId = user.CompanyId,
-                CompanyName = company.Name
+                CompanyName = user.Company.Name
 
 
             };

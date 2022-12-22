@@ -15,6 +15,6 @@ namespace Task.Models
 
         public string Country { get; set; }
 
-        public ICollection<User> Users { get; set; }
+        public virtual List<User> Users { get; set; }=new List<User>();
     }
 }

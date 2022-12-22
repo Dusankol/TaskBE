@@ -11,6 +11,12 @@ namespace Task.Data
 
         }
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseLazyLoadingProxies();
+        }
+                            
+
         public DbSet<User> Users { get; set; }
 
         public DbSet<Task.Models.Company> Companies { get; set; } = default!;
