@@ -1,16 +1,20 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Task.Models
 {
     public class Company
     {
-        [Key]
-        public long Id { get; set; }
+      
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid Id { get; set; }
 
-        public string CompanyName { get; set; }
+        public string Name { get; set; }
 
         public string City { get; set; }
 
         public string Country { get; set; }
+
+        public ICollection<User> Users { get; set; }
     }
 }

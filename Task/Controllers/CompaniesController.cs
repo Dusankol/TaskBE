@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -23,13 +24,20 @@ namespace Task.Controllers
 
         // GET: api/Companies
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Company>>> GetCompany()
+        public async Task<ActionResult<IEnumerable<CompanyDTO>>> GetCompany()
         {
           if (_context.Companies == null)
           {
               return NotFound();
           }
-            return await _context.Companies.ToListAsync();
+            //return await _context.Companies.ToListAsync();
+            var companies =await _context.Companies.Select(x => new CompanyDTO
+            {
+                Id = x.Id,
+                Name = x.Name,
+            }).ToListAsync();
+
+            return Ok(companies);
         }
 
         // GET: api/Companies/5
@@ -53,18 +61,21 @@ namespace Task.Controllers
         // PUT: api/Companies/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutCompany(long id, Company company)
+        public async Task<IActionResult> PutCompany(Guid id, CreateCompanyDTO companyDTO)
         {
-            if (id != company.Id)
-            {
-                return BadRequest();
-            }
+          
 
-            _context.Entry(company).State = EntityState.Modified;
 
             try
             {
+                var company = await _context.Companies.FindAsync(id);
+
+                company.Name=companyDTO.Name;
+                company.City=companyDTO.City;
+                company.Country=companyDTO.Country;
+
                 await _context.SaveChangesAsync();
+
             }
             catch (DbUpdateConcurrencyException)
             {
@@ -84,21 +95,25 @@ namespace Task.Controllers
         // POST: api/Companies
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Company>> PostCompany(Company company)
+        public async Task<ActionResult<Guid>> PostCompany(CreateCompanyDTO companyDTO)
         {
-          if (_context.Companies == null)
-          {
-              return Problem("Entity set 'ApplicationDbContext.Company'  is null.");
-          }
+      
+
+            var company = new Company
+            {
+                Name = companyDTO.Name,
+                City = companyDTO.City,
+                Country = companyDTO.Country
+            };
             _context.Companies.Add(company);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetCompany", new { id = company.Id }, company);
+            return CreatedAtAction("GetCompany", new { id = company.Id },company.Id);
         }
 
         // DELETE: api/Companies/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteCompany(long id)
+        public async Task<IActionResult> DeleteCompany(Guid id)
         {
             if (_context.Companies == null)
             {
@@ -116,7 +131,7 @@ namespace Task.Controllers
             return NoContent();
         }
 
-        private bool CompanyExists(long id)
+        private bool CompanyExists(Guid id)
         {
             return (_context.Companies?.Any(e => e.Id == id)).GetValueOrDefault();
         }
