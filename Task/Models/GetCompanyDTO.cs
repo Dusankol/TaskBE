@@ -8,5 +8,7 @@
         public string City { get; set; }
 
         public string Country { get; set; }
+
+        public List<User> Users { get; set; }
     }
 }

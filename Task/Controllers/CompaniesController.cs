@@ -66,6 +66,7 @@ namespace Task.Controllers
                 Name = company.Name,
                 City = company.City,
                 Country = company.Country,
+                Users=company.Users
 
             };
 
